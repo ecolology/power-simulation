@@ -1,25 +1,50 @@
+# Simulations for experiment design and power analysis
+# (c) Kevin Bairos-Novak, July 2022
+# Inspired by a simulation workshop by Malika Ihle (found here: https://malikaihle.github.io/Introduction-Simulations-in-R/)
 
 
-require(tidyverse)
-theme_set(theme_light())
+## Basic simulations
+# Install the tidyverse if you haven't already! use: install.packages("tidyverse")
+library(tidyverse); theme_set(theme_classic())
+library(VGAM)
 
-mpg = 10
-delta = 0.5
-sigma = 0.5
-N = 10
 
-# Code that prints the p-value of a single simulation:
-y1 <- rnorm(n=N, mpg, sigma)
-y2 <- rnorm(n=N, mpg+delta, sigma)
-t.test(y1, y2) %>%
-	broom::tidy() %>%
-	pull(p.value)
+# Power analysis
+
+# I want to design an experiment:
+# Effect of a new treatment drug (‘treatment’) vs. placebo (‘control’) on the 
+# rate of skin cancer growth (can range in theory from -infinity to +infinity, so we
+# assume a normal distribution)
+
+
+# Skin cancer growth in control (placebo) group, without treatment:
+control_mean = 0.12 # mm/month
+control_sd = 0.25  # mm/month
+
+# Skin cancer growth in drug treatment group:
+treatment_mean1 = -0.01 # biologically important effect (mean negative growth of cancer)
+treatment_mean2 =  0.11 # smallest detectable effect (smallest change in cancer growth that we can detect)
+treatment_sd    = control_sd # assume similar SDs (unless we have information otherwise)
+
+# Pick any reasonable clinical trial size for now (# people in each sub-group)
+N = 30
+
+# Simulate cancer growth for all populations using rnorm() function:
+control_pop    <- rnorm(n = N, mean = control_mean,    sd = control_sd)
+treatment_pop1 <- rnorm(n = N, mean = treatment_mean1, sd = treatment_sd)
+treatment_pop2 <- rnorm(n = N, mean = treatment_mean2, sd = treatment_sd)
+
+# Run the t-test for the control vs. biologically important effect, and
+# control vs. smallest detectable effect
+t.test(control_pop, treatment_pop1, paired=FALSE, conf.level = 0.95)
+t.test(control_pop, treatment_pop2, paired=FALSE, conf.level = 0.95)
+
 
 # Put into replicate to replicate across 1000 simulations
 p_vals <- replicate(1000, {
-	y1 <- rnorm(n=N, mpg, sigma)
-	y2 <- rnorm(n=N, mpg+delta, sigma)
-	t.test(y1, y2) %>%
+	y1 <- rnorm(n=N, 0, sigma)
+	y2 <- rnorm(n=N, delta, sigma)
+	t.test(y1, y2, paired=FALSE, conf.level = 0.95) %>%
 		broom::tidy() %>%
 		pull(p.value)
 })
@@ -70,5 +95,10 @@ p1 +
 	annotate(geom = "text", label = paste("n =",min_N), hjust = 0,
 			 x = min_N+2, y = 0.05, color = "red")
 
-	
+
+
+## Poisson hurdle model
+
+# Can use VGAM::rzapois(n=100, lambda = 3, pobs0 = 0.2) to simulate, from package VGAM
+
 
