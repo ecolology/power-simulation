@@ -141,21 +141,28 @@ min_N1 <- sims %>%
 p1 <- sims %>%
 	ggplot(aes(x = N, y = power, color = effect_size)) +
 	geom_line() +
-	geom_hline(yintercept = 0.8, color = "red", linetype = "dashed")
+	geom_hline(yintercept = 0.8, color = "red", linetype = "dashed") +
+	labs(x = "Sample Size (n per subgroup)", y = "Statistical Power", color = "Effect Size")
 
 p1 + 
 	annotate(geom = "text", label = paste("power = 0.8"), hjust = 1,
 			 x = max(N), y = 0.85, color = "red") +
 	annotate(geom = "segment", 
-			 x = min_N, xend = min_N, y = 0, yend = 0.8,
+			 x = min_N1, xend = min_N1, y = 0, yend = 0.8,
 			 color = "red", linetype = "dashed") +
-	annotate(geom = "text", label = paste("n =",min_N), hjust = 0,
-			 x = min_N+2, y = 0.05, color = "red")
+	annotate(geom = "text", label = paste("n =",min_N1), hjust = 0,
+			 x = min_N1+2, y = 0.03, color = "red")
 
 
+# Other random distribution simulators:
+rgamma(n=100, shape = 5, rate = 3) %>% hist   # Normal distribution (continuous distribution from -infinity to +infinity)
+rbinom(n=100, size = 10, prob = 0.5) %>% hist # Binomial distribution (like flipping a coin 10 times)
+rbinom(n=100, size = 1, prob = 0.5) %>% hist  # Bernoulli distribution (Binomial distribution of size = 1)
+rgamma(n=100, shape = 5, rate = 3) %>% hist   # Gamma distribution (continuous distribution from 0 to +infinity)
+rpois(n=100, lambda = 5) %>% hist   # Poisson distribution (for count data/integers where variance = mean)
+MASS::rnegbin(n=100, mu = 5, theta = 2) %>% hist # Negative binomial distribution (for overdispersed count data, where variance >> mean)
+rbeta(n=100, shape1 = 0.5, shape2 = 0.5) %>% hist # Beta distribution (for proportions)
+VGAM::rzapois(n=100, lambda = 5, pobs0 = 0.2) # Hurdle poisson model (combination of Poisson and Binomial models;  may need to install package VGAM first)
 
-## Poisson hurdle model
-
-# Can use VGAM::rzapois(n=100, lambda = 3, pobs0 = 0.2) to simulate, from package VGAM
 
 
